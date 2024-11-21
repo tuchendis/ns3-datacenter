@@ -39,6 +39,14 @@ additional_commands:
             HEADER_FILES : '*'
             LIBRARIES_TO_LINK : '*'
 
+    build_experiment:
+        flags: [IGNORE_PCH]
+        kwargs:
+            NAME : '1'
+            SOURCE_FILES : '*'
+            HEADER_FILES : '*'
+            LIBRARIES_TO_LINK : '*'
+
     find_external_library:
         kwargs:
             DEPENDENCY_NAME : '1'

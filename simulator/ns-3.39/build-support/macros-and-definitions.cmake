@@ -1822,6 +1822,50 @@ macro(build_example)
   endif()
 endmacro()
 
+# Macro to build experiments in ns-3-dev/experiments/
+macro(build_experiment)
+  set(options IGNORE_PCH)
+  set(oneValueArgs NAME)
+  set(multiValueArgs SOURCE_FILES HEADER_FILES LIBRARIES_TO_LINK)
+  cmake_parse_arguments(
+    "EXPERIMENT" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN}
+  )
+
+  # Filter experiments out if they don't contain one of the filtered in modules
+  set(filtered_in ON)
+  if(NS3_FILTER_MODULE_EXPERIMENTS_AND_TESTS)
+   set(filtered_in OFF)
+   foreach(filtered_module NS3_FILTER_MODULE_EXAMPLES_AND_TESTS)
+     if(${filtered_module} IN_LIST EXAMPLE_LIBRARIES_TO_LINK)
+       set(filtered_in ON)
+     endif()
+   endforeach()
+  endif()
+
+  check_for_missing_libraries(
+    missing_dependencies "${EXPERIMENT_LIBRARIES_TO_LINK}"
+  )
+
+  if((NOT missing_dependencies) AND ${filtered_in})
+    # Convert boolean into text to forward argument
+    if(${EXPERIMENT_IGNORE_PCH})
+      set(IGNORE_PCH IGNORE_PCH)
+    endif()
+    # Create example library with sources and headers
+    # cmake-format: off
+    build_exec(
+      EXECNAME ${EXPERIMENT_NAME}
+      SOURCE_FILES ${EXPERIMENT_SOURCE_FILES}
+      HEADER_FILES ${EXPERIMENT_HEADER_FILES}
+      LIBRARIES_TO_LINK ${EXPERIMENT_LIBRARIES_TO_LINK} ${optional_visualizer_lib}
+      EXECUTABLE_DIRECTORY_PATH
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/experiments/${experimentfolder}/
+      ${IGNORE_PCH}
+    )
+    # cmake-format: on
+  endif()
+endmacro()
+
 function(filter_modules modules_to_filter all_modules_list filter_in)
   set(new_modules_to_build)
   # We are receiving variable names as arguments, so we have to "dereference"
